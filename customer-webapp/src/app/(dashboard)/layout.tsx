@@ -1,0 +1,259 @@
+'use client';
+
+import React, { useState } from 'react';
+import { Layout, Menu, ConfigProvider, Badge, Avatar } from 'antd';
+import {
+  InboxOutlined,
+  MessageOutlined,
+  LogoutOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  SnippetsOutlined,
+} from '@ant-design/icons';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { WebSocketProvider, useWebSocket } from '@/contexts/WebSocketContext';
+import AuthGuard from '@/components/AuthGuard';
+
+const { Sider, Content } = Layout;
+
+function ConnectionStatus() {
+  const { connected } = useWebSocket();
+  
+  return (
+    <div style={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: 6,
+      padding: '8px 16px',
+      fontSize: '12px',
+      color: '#8c8c8c',
+      borderBottom: '1px solid rgba(255,255,255,0.1)'
+    }}>
+      <div style={{
+        width: 8,
+        height: 8,
+        borderRadius: '50%',
+        backgroundColor: connected ? '#52c41a' : '#ff4d4f',
+        boxShadow: connected ? '0 0 8px rgba(82, 196, 26, 0.6)' : '0 0 8px rgba(255, 77, 79, 0.6)',
+      }} />
+      <span style={{ color: 'rgba(255,255,255,0.85)' }}>
+        {connected ? 'Connected' : 'Disconnected'}
+      </span>
+    </div>
+  );
+}
+
+function DashboardContent({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const { logout, user } = useAuth();
+  const [collapsed, setCollapsed] = useState(false);
+
+  const isLoginPage = pathname === '/dashboard/login';
+
+  const menuItems = [
+    {
+      key: '/dashboard',
+      icon: <InboxOutlined />,
+      label: <Link href="/dashboard">Queue</Link>,
+    },
+    {
+      key: '/dashboard/my-conversations',
+      icon: <MessageOutlined />,
+      label: <Link href="/dashboard/my-conversations">My Conversations</Link>,
+    },
+    {
+      key: '/dashboard/canned-responses',
+      icon: <SnippetsOutlined />,
+      label: <Link href="/dashboard/canned-responses">Canned Responses</Link>,
+    },
+  ];
+
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
+  return (
+    <AuthGuard>
+      <WebSocketProvider>
+        <Layout style={{ minHeight: '100vh' }}>
+          <Sider 
+            theme="dark"
+            width={240}
+            collapsible
+            collapsed={collapsed}
+            onCollapse={setCollapsed}
+            breakpoint="lg"
+            collapsedWidth={80}
+            style={{
+              background: 'linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%)',
+              boxShadow: '2px 0 8px rgba(0,0,0,0.15)',
+            }}
+          >
+            <div style={{ 
+              padding: collapsed ? '16px 8px' : '20px 16px',
+              fontWeight: 700,
+              fontSize: collapsed ? '14px' : '18px',
+              color: '#fff',
+              textAlign: collapsed ? 'center' : 'left',
+              borderBottom: '1px solid rgba(255,255,255,0.1)',
+              letterSpacing: '0.5px',
+              transition: 'all 0.2s',
+            }}>
+              {collapsed ? 'CS' : 'Customer Service'}
+            </div>
+            
+            <ConnectionStatus />
+            
+            <Menu
+              mode="inline"
+              selectedKeys={[pathname]}
+              items={menuItems}
+              style={{ 
+                borderRight: 0,
+                background: 'transparent',
+                color: 'rgba(255,255,255,0.85)',
+                flex: 1,
+                marginTop: 8,
+              }}
+              theme="dark"
+            />
+            
+            {!collapsed && (
+              <div style={{ 
+                padding: '16px',
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(0,0,0,0.2)',
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 12,
+                  marginBottom: 12,
+                }}>
+                  <Avatar 
+                    style={{ 
+                      backgroundColor: '#2563eb',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {user?.displayName?.charAt(0).toUpperCase() || 'A'}
+                  </Avatar>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ 
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: '#fff',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {user?.displayName}
+                    </div>
+                    <div style={{ 
+                      fontSize: '11px',
+                      color: 'rgba(255,255,255,0.65)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {user?.email}
+                    </div>
+                  </div>
+                </div>
+                <div
+                  onClick={logout}
+                  style={{
+                    cursor: 'pointer',
+                    color: '#93c5fd',
+                    fontSize: '13px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '6px 8px',
+                    borderRadius: 4,
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(147, 197, 253, 0.1)';
+                    e.currentTarget.style.color = '#dbeafe';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = '#93c5fd';
+                  }}
+                >
+                  <LogoutOutlined />
+                  Logout
+                </div>
+              </div>
+            )}
+            
+            {collapsed && (
+              <div style={{ 
+                padding: '16px 0',
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(0,0,0,0.2)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 12,
+              }}>
+                <Avatar 
+                  style={{ 
+                    backgroundColor: '#2563eb',
+                  }}
+                >
+                  {user?.displayName?.charAt(0).toUpperCase() || 'A'}
+                </Avatar>
+                <LogoutOutlined 
+                  onClick={logout}
+                  style={{
+                    fontSize: '16px',
+                    color: '#93c5fd',
+                    cursor: 'pointer',
+                  }}
+                />
+              </div>
+            )}
+          </Sider>
+          
+          <Layout style={{ background: '#f5f7fa' }}>
+            <Content style={{ 
+              margin: '24px',
+              padding: '24px',
+              background: '#fff',
+              borderRadius: 8,
+              minHeight: 'calc(100vh - 48px)',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            }}>
+              {children}
+            </Content>
+          </Layout>
+        </Layout>
+      </WebSocketProvider>
+    </AuthGuard>
+  );
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: '#2563eb',
+          borderRadius: 6,
+        },
+      }}
+    >
+      <AuthProvider>
+        <DashboardContent>{children}</DashboardContent>
+      </AuthProvider>
+    </ConfigProvider>
+  );
+}

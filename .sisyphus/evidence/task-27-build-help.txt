@@ -1,0 +1,20 @@
+Build Script Help Test - Task 27
+=================================
+
+Command: ./build.sh --help
+
+Output:
+Open Customer System - Build Script
+
+Usage: ./build.sh [options]
+
+Options:
+  --help, -h     Show this help
+  --skipTests     Skip running tests (default)
+  --with-tests    Run tests during build
+  --no-webapp     Skip frontend build
+  --no-dist       Skip distribution package
+
+Default: ./build.sh → mvnw -Pwebapp,dist -DskipTests clean install
+
+Result: SUCCESS

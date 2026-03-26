@@ -1,0 +1,80 @@
+=== Docker Compose Services Status ===
+Generated: $(date)
+
+NAME                IMAGE               COMMAND                  SERVICE             CREATED              STATUS                        PORTS
+customer-mysql      mysql:8.0           "docker-entrypoint.s…"   mysql               About a minute ago   Up About a minute (healthy)   33060/tcp, 0.0.0.0:3307->3306/tcp
+customer-redis      redis:7-alpine      "docker-entrypoint.s…"   redis               About a minute ago   Up About a minute (healthy)   0.0.0.0:6379->6379/tcp
+
+=== MySQL Health Check ===
+mysqladmin: [Warning] Using a password on the command line interface can be insecure.
+mysqld is alive
+
+=== Redis Health Check ===
+PONG
+
+=== Docker Compose Config Validation ===
+name: open-customer-system
+services:
+  mysql:
+    container_name: customer-mysql
+    environment:
+      MYSQL_DATABASE: customer_service
+      MYSQL_ROOT_PASSWORD: root123
+    healthcheck:
+      test:
+      - CMD
+      - mysqladmin
+      - ping
+      - -h
+      - localhost
+      timeout: 5s
+      interval: 10s
+      retries: 5
+      start_period: 30s
+    image: mysql:8.0
+    networks:
+      default: null
+    ports:
+    - mode: ingress
+      target: 3306
+      published: "3307"
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: volume
+      source: mysql_data
+      target: /var/lib/mysql
+      volume: {}
+  redis:
+    container_name: customer-redis
+    healthcheck:
+      test:
+      - CMD
+      - redis-cli
+      - ping
+      timeout: 5s
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    image: redis:7-alpine
+    networks:
+      default: null
+    ports:
+    - mode: ingress
+      target: 6379
+      published: "6379"
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: volume
+      source: redis_data
+      target: /data
+      volume: {}
+networks:
+  default:
+    name: open-customer-system_default
+volumes:
+  mysql_data:
+    name: open-customer-system_mysql_data
+  redis_data:
+    name: open-customer-system_redis_data

@@ -1,0 +1,25 @@
+package com.opencustomer.server.entity;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.opencustomer.server.enums.SenderType;
+import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@TableName("messages")
+public class Message {
+    private Long id;
+    private Long conversationId;
+    private SenderType senderType;
+    private String senderId;
+    private String content;
+    private String clientMessageId;
+    private Long sequenceNumber;
+    private LocalDateTime createdAt;
+}

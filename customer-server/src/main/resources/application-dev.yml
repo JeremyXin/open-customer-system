@@ -1,0 +1,31 @@
+# Development environment configuration
+spring:
+  datasource:
+    url: jdbc:mysql://10.35.247.60:2881/customer_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: GM4EMIEpnYjsC7ij9VRJ
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      cluster:
+        nodes: 10.224.192.93:6371,10.224.192.94:6371,10.224.192.95:6371
+      timeout: 5000
+  flyway:
+    enabled: false
+
+# SQL logging enabled for development debugging
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# JWT config - insecure defaults acceptable for local dev
+app:
+  jwt:
+    secret: my-super-secret-key-for-development-only-change-in-production
+    expiration: 3600000
+    refresh-expiration: 86400000
+
+logging:
+  level:
+    com.opencustomer.server: DEBUG
+    org.springframework.web: DEBUG
